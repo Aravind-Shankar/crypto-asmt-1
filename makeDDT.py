@@ -6,7 +6,7 @@ import csv
 def lin_combo(A, X):
     return np.bitwise_xor.reduce(np.bitwise_and(A, X))
 
-def main():
+def writeDDTAndReturnPropRatio():
     if len(sys.argv) < 2:
         print "Please pass input sbox file name"
         sys.exit()
@@ -26,7 +26,6 @@ def main():
     # sbox(x,1) = y is the (x,y) pair of the input output 
  
     y= np.zeros((len(X_RANGE),len(Y_RANGE) ))          
-    print y.shape
     for i in X_RANGE: #input values
       for j in X_RANGE: #input difference
         # now to find all possible output differences and tabulate
@@ -36,5 +35,8 @@ def main():
     with  open("DDT.csv","w") as f:
      wr=csv.writer(f)
      wr.writerows(y)
+
+    prop_ratio = np.max(np.max(y)) / len(X_RANGE)
+    return prop_ratio
          
-main()
+writeDDTAndReturnPropRatio()

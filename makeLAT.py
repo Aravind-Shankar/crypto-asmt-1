@@ -9,7 +9,7 @@ def bitfield(n):
 def lin_combo(A, X):
     return np.bitwise_xor.reduce(bitfield(np.bitwise_and(A, X)))
 
-def main():
+def writeLATAndRetMaxBias():
     if len(sys.argv) < 2:
         print "Please pass input sbox file name"
         sys.exit()
@@ -42,4 +42,7 @@ def main():
         wr = csv.writer(f)
         wr.writerows(LAT)
 
-main()
+    maxbias = np.max(np.max(np.abs(LAT - (len(X_RANGE) / 2)))) / len(X_RANGE)
+    return maxbias
+
+writeLATAndRetMaxBias()
