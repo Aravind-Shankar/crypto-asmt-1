@@ -3,8 +3,11 @@ import sys
 import numpy as np
 import csv
 
+def bitfield(n):
+    return [int(digit) for digit in bin(n)[2:]] # [2:] to chop off the "0b" part 
+
 def lin_combo(A, X):
-    return np.bitwise_xor.reduce(np.bitwise_and(A, X))
+    return np.bitwise_xor.reduce(bitfield(np.bitwise_and(A, X)))
 
 def main():
     if len(sys.argv) < 2:
@@ -12,7 +15,7 @@ def main():
         sys.exit()
     fname = sys.argv[1]
 
-    LEN_X, LEN_Y = 8, 8
+    LEN_X, LEN_Y = 4, 4
     X_RANGE, Y_RANGE = np.arange(2**LEN_X), np.arange(2**LEN_Y)
 
     with open(fname, "r") as f:
@@ -23,15 +26,20 @@ def main():
 
     sbox = np.array(sbox, dtype=int).flatten()
     
-    A,B = np.meshgrid(X_RANGE, Y_RANGE)
-    A,B = A.transpose(), B.transpose()
-
+    A,B = X_RANGE, Y_RANGE
+    
     LAT = np.zeros( (len(A), len(B)) )
+    out = np.zeros( (len(A), len(B)) )
     for x in X_RANGE:
         y = sbox[x]
-        out = np.logical_not(np.bitwise_xor(lin_combo(A, x), lin_combo(B, y)))
+        for a in A:
+            for b in B:
+                out[a,b] = np.bitwise_xor(lin_combo(a, x), lin_combo(b, y))
         LAT += out
 
-    
+    LAT = 16 - LAT
+    with open("LAT.csv","w") as f:
+        wr = csv.writer(f)
+        wr.writerows(LAT)
 
 main()
