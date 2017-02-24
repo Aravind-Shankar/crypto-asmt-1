@@ -3,8 +3,8 @@ import sys
 import numpy as np
 import csv
 
-def bitfield(n):
-    return [int(digit) for digit in bin(n)[2:]] # [2:] to chop off the "0b" part 
+def bitfield(n, width=-1):
+    return [int(digit) for digit in (bin(n)[2:]).zfill(width)] # [2:] to chop off the "0b" part 
 
 def lin_combo(A, X):
     return np.bitwise_xor.reduce(bitfield(np.bitwise_and(A, X)))
@@ -45,4 +45,5 @@ def writeLATAndRetMaxBias():
     maxbias = np.max(np.max(np.abs(LAT - (len(X_RANGE) / 2)))) / len(X_RANGE)
     return maxbias
 
-writeLATAndRetMaxBias()
+if __name__ == "__main__":
+    writeLATAndRetMaxBias()
