@@ -6,13 +6,14 @@ import csv
 def lin_combo(A, X):
     return np.bitwise_xor.reduce(np.bitwise_and(A, X))
 
-def writeDDTAndReturnPropRatio():
+def writeDDTAndReturnPropRatio(fname):
+    '''
     if len(sys.argv) < 2:
-        print "Please pass input sbox file name"
+        print "Please pass input sbox file name da"
         sys.exit()
     fname = sys.argv[1]
-
-    LEN_X, LEN_Y = 4,4
+   '''
+    LEN_X, LEN_Y = 8,8
     X_RANGE, Y_RANGE = np.arange(2**LEN_X), np.arange(2**LEN_Y)
 
     with open(fname, "r") as f:
@@ -32,11 +33,14 @@ def writeDDTAndReturnPropRatio():
         y[j][np.bitwise_xor(sbox[i],sbox[np.bitwise_xor(i,j)])]+=1
          
     #y is the differential table
+    '''
     with  open("DDT.csv","w") as f:
      wr=csv.writer(f)
      wr.writerows(y)
-
+    '''
+    y[0][0] =0
     prop_ratio = np.max(np.max(y)) / len(X_RANGE)
+    #print prop_ratio
     return prop_ratio
          
-writeDDTAndReturnPropRatio()
+#writeDDTAndReturnPropRatio()
