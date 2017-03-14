@@ -1,6 +1,7 @@
 #include "savitr.h"
 
-void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys) {
+void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
+{
 	u32 s0, s1, s2, s3, t0, t1, t2, t3;
 
 	assert(in && out && keys);
@@ -122,7 +123,8 @@ void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys) {
    	PUTU32(out + 12, t3);
 }
 
-void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys) {
+void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
+{
 	u32 s0, s1, s2, s3, t0, t1, t2, t3;
 
 	assert(in && out && keys);
