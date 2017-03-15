@@ -1,5 +1,5 @@
 testfile:
-	gcc savitr.c savitr_test.c -o savitr_test
+	gcc -Wall savitr.c savitr_test.c -o savitr_test
 
 cleanWIN:
 	del savitr_test

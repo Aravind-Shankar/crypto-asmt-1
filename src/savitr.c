@@ -160,6 +160,29 @@ static const u32 Td[256] =
     0x9f5d80beU, 0x91548db5U, 0x834f9aa8U, 0x8d4697a3U
 };
 
+/*
+ *  Implementation-specific macro definitions.
+ */
+
+#define SBOX32(x)   (( S[((x) >> 24)] << 24 )        |      \
+                    ( S[((x) >> 16) & 0xff] << 16 ) |      \
+                    ( S[((x) >> 8) & 0xff] << 8 )   |      \
+                    ( S[((x) & 0xff)] ))
+
+#define TE0(x)      Te[(x)]
+#define TE1(x)      _lrotr(Te[(x)], 8)
+#define TE2(x)      _lrotr(Te[(x)], 16)
+#define TE3(x)      _lrotl(Te[(x)], 8)
+
+#define TD0(x)      Td[(x)]
+#define TD1(x)      _lrotr(Td[(x)], 8)
+#define TD2(x)      _lrotr(Td[(x)], 16)
+#define TD3(x)      _lrotl(Td[(x)], 8)
+
+/*
+ *  Definitions of functions from savitr.h
+ */
+
 void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
 {
 	u32 s0, s1, s2, s3, t0, t1, t2, t3;

@@ -9,7 +9,7 @@
 void readText(const char *fname, u8 *text)
 {
 	FILE* f;
-	u32 inputText;
+	unsigned int inputText;
 	int i;
 
 	if ((f = fopen(fname, "r")) == NULL)
@@ -41,7 +41,7 @@ void readKeys(const char *fname, u32 *keys)
 
 	if ((f = fopen(fname, "r")) == NULL)
 	{
-		printf("Cannot open input file\n");
+		printf("Cannot open key file\n");
 		exit(-1);
 	}
 	printf("\nThe round keys are:\n");
@@ -63,7 +63,7 @@ void readKeys(const char *fname, u32 *keys)
  *	Output file format - one line with 16 space-separated bytes (i.e. 2-digit hex numbers)
  *
  */
-void writeOutput(u8 *output)
+void writeOutput(const char *fname, u8 *output)
 {
 	FILE* f;
 	int i;
