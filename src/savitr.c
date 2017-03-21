@@ -227,7 +227,7 @@ void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
 
 void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
 {
-	u32 s0, s1, s2, s3, t0, t1, t2, t3;
+	u32 s0, s1, s2, s3, t0, t1, t2, t3, tm0, tm1, tm2, tm3;
 	int i, fi;
 
 	assert(in && out && keys);
@@ -239,19 +239,31 @@ void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
 	t3 = GETU32(in + 12);
 
 	// rounds
-	for (i = fi = 0; i < 10; ++i, fi += 4)
+	for (i = 0, fi = 4 * (10 - 1); i < 10; ++i, fi -= 4)
 	{
 		// printf("(D) Round %d input:\t%08x %08x %08x %08x\n", i+1, t0, t1, t2, t3);
-		s0 = TD0(t0 >> 24) ^ TD1((t3 >> 16) & 0xff) ^ TD2((t2 >>  8) & 0xff) ^ TD3(t1 & 0xff);
+		/* s0 = TD0(t0 >> 24) ^ TD1((t3 >> 16) & 0xff) ^ TD2((t2 >>  8) & 0xff) ^ TD3(t1 & 0xff);
 	    s1 = TD0(t1 >> 24) ^ TD1((t0 >> 16) & 0xff) ^ TD2((t3 >>  8) & 0xff) ^ TD3(t2 & 0xff);
 	    s2 = TD0(t2 >> 24) ^ TD1((t1 >> 16) & 0xff) ^ TD2((t0 >>  8) & 0xff) ^ TD3(t3 & 0xff);
-	    s3 = TD0(t3 >> 24) ^ TD1((t2 >> 16) & 0xff) ^ TD2((t1 >>  8) & 0xff) ^ TD3(t0 & 0xff);
+	    s3 = TD0(t3 >> 24) ^ TD1((t2 >> 16) & 0xff) ^ TD2((t1 >>  8) & 0xff) ^ TD3(t0 & 0xff); */
 
+        // Inverse mix cols
+        tm0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
+        tm1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
+        tm2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
+        tm3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
+       
+        // Now inverse shift rows
+        s0 = (tm0 & (0xff << 24)) ^ (tm3 & (0xff << 16)) ^ (tm2 & (0xff << 8)) ^ (tm1 & 0xff);
+        s1 = (tm1 & (0xff << 24)) ^ (tm0 & (0xff << 16)) ^ (tm3 & (0xff << 8)) ^ (tm2 & 0xff);
+        s2 = (tm2 & (0xff << 24)) ^ (tm1 & (0xff << 16)) ^ (tm0 & (0xff << 8)) ^ (tm3 & 0xff);
+        s3 = (tm3 & (0xff << 24)) ^ (tm2 & (0xff << 16)) ^ (tm1 & (0xff << 8)) ^ (tm0 & 0xff);
+        
    		printf("(D) Round %d BEFORE FIESTEL:\t%08x %08x %08x %08x\n", i+1, s0, s1, s2, s3);
-	    t0 = _lrotr(SBOX32_COL(s0) ^ keys[    fi], 8);
-		t1 = _lrotr(SBOX32_COL(s1) ^ keys[1 + fi], 8);
-		t2 = _lrotr(SBOX32_COL(s2) ^ keys[2 + fi], 8);
-		t3 = _lrotr(SBOX32_COL(s3) ^ keys[3 + fi], 8);
+	    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[    fi];
+		t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[1 + fi];
+		t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[2 + fi];
+		t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[3 + fi];
 	    printf("(D) Round %d output:\t%08x %08x %08x %08x\n", i+1, t0, t1, t2, t3);
 	}
 
