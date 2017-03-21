@@ -191,8 +191,7 @@ static const u32 Td[256] =
 void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
 {
 	u32 s0, s1, s2, s3, t0, t1, t2, t3;
-	int i, fi;
-
+	
 	assert(in && out && keys);
 
 	// initialization
@@ -201,23 +200,97 @@ void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
 	t2 = GETU32(in +  8);
 	t3 = GETU32(in + 12);
 
-	// rounds
-   	for (i = fi = 0; i < 10; ++i, fi += 4)
-   	{
-   		// printf("(E) Round %d input:\t%08x %08x %08x %08x\n", i+1, t0, t1, t2, t3);
-   		s0 = _lrotl(t0 ^ keys[    fi], 8); s0 = SBOX32_COL(s0);
-		s1 = _lrotl(t1 ^ keys[1 + fi], 8); s1 = SBOX32_COL(s1);
-		s2 = _lrotl(t2 ^ keys[2 + fi], 8); s2 = SBOX32_COL(s2);
-		s3 = _lrotl(t3 ^ keys[3 + fi], 8); s3 = SBOX32_COL(s3);
-   		printf("(E) Round %d FIESTEL:\t%08x %08x %08x %08x\n", i+1, s0, s1, s2, s3);
-
-		t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
-	   	t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
-	   	t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
-	   	t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
-   		printf("(E) Round %d output:\t%08x %08x %08x %08x\n", i+1, t0, t1, t2, t3);
-   	}
-   	
+	// round 1
+	s0 = _lrotl(t0 ^ keys[ 0], 8); s0 = SBOX32_COL(s0);
+	s1 = _lrotl(t1 ^ keys[ 1], 8); s1 = SBOX32_COL(s1);
+	s2 = _lrotl(t2 ^ keys[ 2], 8); s2 = SBOX32_COL(s2);
+	s3 = _lrotl(t3 ^ keys[ 3], 8); s3 = SBOX32_COL(s3);
+	t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+   	t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+   	t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+   	t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 2
+    s0 = _lrotl(t0 ^ keys[ 4], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[ 5], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[ 6], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[ 7], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 3
+    s0 = _lrotl(t0 ^ keys[ 8], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[ 9], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[10], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[11], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 4
+    s0 = _lrotl(t0 ^ keys[12], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[13], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[14], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[15], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 5
+    s0 = _lrotl(t0 ^ keys[16], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[17], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[18], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[19], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 6
+    s0 = _lrotl(t0 ^ keys[20], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[21], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[22], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[23], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 7
+    s0 = _lrotl(t0 ^ keys[24], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[25], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[26], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[27], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 8
+    s0 = _lrotl(t0 ^ keys[28], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[29], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[30], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[31], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 9
+    s0 = _lrotl(t0 ^ keys[32], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[33], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[34], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[35], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+    // round 10
+    s0 = _lrotl(t0 ^ keys[36], 8); s0 = SBOX32_COL(s0);
+    s1 = _lrotl(t1 ^ keys[37], 8); s1 = SBOX32_COL(s1);
+    s2 = _lrotl(t2 ^ keys[38], 8); s2 = SBOX32_COL(s2);
+    s3 = _lrotl(t3 ^ keys[39], 8); s3 = SBOX32_COL(s3);
+    t0 = TE0(s0 >> 24) ^ TE1((s1 >> 16) & 0xff) ^ TE2((s2 >>  8) & 0xff) ^ TE3(s3 & 0xff);
+    t1 = TE0(s1 >> 24) ^ TE1((s2 >> 16) & 0xff) ^ TE2((s3 >>  8) & 0xff) ^ TE3(s0 & 0xff);
+    t2 = TE0(s2 >> 24) ^ TE1((s3 >> 16) & 0xff) ^ TE2((s0 >>  8) & 0xff) ^ TE3(s1 & 0xff);
+    t3 = TE0(s3 >> 24) ^ TE1((s0 >> 16) & 0xff) ^ TE2((s1 >>  8) & 0xff) ^ TE3(s2 & 0xff);
+       	
    	/* all rounds over, writing to final output */
    	PUTU32(out     , t0);
    	PUTU32(out +  4, t1);
@@ -227,9 +300,8 @@ void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
 
 void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
 {
-	u32 s0, s1, s2, s3, t0, t1, t2, t3, tm0, tm1, tm2, tm3;
-	int i, fi;
-
+	u32 s0, s1, s2, s3, t0, t1, t2, t3;
+	
 	assert(in && out && keys);
 
 	// initialization
@@ -238,34 +310,136 @@ void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
 	t2 = GETU32(in +  8);
 	t3 = GETU32(in + 12);
 
-	// rounds
-	for (i = 0, fi = 4 * (10 - 1); i < 10; ++i, fi -= 4)
-	{
-		// printf("(D) Round %d input:\t%08x %08x %08x %08x\n", i+1, t0, t1, t2, t3);
-		/* s0 = TD0(t0 >> 24) ^ TD1((t3 >> 16) & 0xff) ^ TD2((t2 >>  8) & 0xff) ^ TD3(t1 & 0xff);
-	    s1 = TD0(t1 >> 24) ^ TD1((t0 >> 16) & 0xff) ^ TD2((t3 >>  8) & 0xff) ^ TD3(t2 & 0xff);
-	    s2 = TD0(t2 >> 24) ^ TD1((t1 >> 16) & 0xff) ^ TD2((t0 >>  8) & 0xff) ^ TD3(t3 & 0xff);
-	    s3 = TD0(t3 >> 24) ^ TD1((t2 >> 16) & 0xff) ^ TD2((t1 >>  8) & 0xff) ^ TD3(t0 & 0xff); */
-
-        // Inverse mix cols
-        tm0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
-        tm1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
-        tm2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
-        tm3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
-       
-        // Now inverse shift rows
-        s0 = (tm0 & (0xff << 24)) ^ (tm3 & (0xff << 16)) ^ (tm2 & (0xff << 8)) ^ (tm1 & 0xff);
-        s1 = (tm1 & (0xff << 24)) ^ (tm0 & (0xff << 16)) ^ (tm3 & (0xff << 8)) ^ (tm2 & 0xff);
-        s2 = (tm2 & (0xff << 24)) ^ (tm1 & (0xff << 16)) ^ (tm0 & (0xff << 8)) ^ (tm3 & 0xff);
-        s3 = (tm3 & (0xff << 24)) ^ (tm2 & (0xff << 16)) ^ (tm1 & (0xff << 8)) ^ (tm0 & 0xff);
-        
-   		printf("(D) Round %d BEFORE FIESTEL:\t%08x %08x %08x %08x\n", i+1, s0, s1, s2, s3);
-	    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[    fi];
-		t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[1 + fi];
-		t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[2 + fi];
-		t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[3 + fi];
-	    printf("(D) Round %d output:\t%08x %08x %08x %08x\n", i+1, t0, t1, t2, t3);
-	}
+	// round 1
+    s0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
+    s1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
+    s2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
+    s3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
+    t0 = (s0 & (0xff << 24)) ^ (s3 & (0xff << 16)) ^ (s2 & (0xff << 8)) ^ (s1 & 0xff);
+    t1 = (s1 & (0xff << 24)) ^ (s0 & (0xff << 16)) ^ (s3 & (0xff << 8)) ^ (s2 & 0xff);
+    t2 = (s2 & (0xff << 24)) ^ (s1 & (0xff << 16)) ^ (s0 & (0xff << 8)) ^ (s3 & 0xff);
+    t3 = (s3 & (0xff << 24)) ^ (s2 & (0xff << 16)) ^ (s1 & (0xff << 8)) ^ (s0 & 0xff);
+    s0 = _lrotr(SBOX32_COL(t0), 8) ^ keys[36];
+    s1 = _lrotr(SBOX32_COL(t1), 8) ^ keys[37];
+    s2 = _lrotr(SBOX32_COL(t2), 8) ^ keys[38];
+    s3 = _lrotr(SBOX32_COL(t3), 8) ^ keys[39];
+    // round 2
+    t0 = TD0(s0 >> 24) ^ TD1( (s0 >> 16) & 0xff ) ^ TD2( (s0 >> 8) & 0xff ) ^ TD3(s0 & 0xff);
+    t1 = TD0(s1 >> 24) ^ TD1( (s1 >> 16) & 0xff ) ^ TD2( (s1 >> 8) & 0xff ) ^ TD3(s1 & 0xff);
+    t2 = TD0(s2 >> 24) ^ TD1( (s2 >> 16) & 0xff ) ^ TD2( (s2 >> 8) & 0xff ) ^ TD3(s2 & 0xff);
+    t3 = TD0(s3 >> 24) ^ TD1( (s3 >> 16) & 0xff ) ^ TD2( (s3 >> 8) & 0xff ) ^ TD3(s3 & 0xff);
+    s0 = (t0 & (0xff << 24)) ^ (t3 & (0xff << 16)) ^ (t2 & (0xff << 8)) ^ (t1 & 0xff);
+    s1 = (t1 & (0xff << 24)) ^ (t0 & (0xff << 16)) ^ (t3 & (0xff << 8)) ^ (t2 & 0xff);
+    s2 = (t2 & (0xff << 24)) ^ (t1 & (0xff << 16)) ^ (t0 & (0xff << 8)) ^ (t3 & 0xff);
+    s3 = (t3 & (0xff << 24)) ^ (t2 & (0xff << 16)) ^ (t1 & (0xff << 8)) ^ (t0 & 0xff);
+    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[32];
+    t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[33];
+    t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[34];
+    t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[35];
+    // round 3
+    s0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
+    s1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
+    s2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
+    s3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
+    t0 = (s0 & (0xff << 24)) ^ (s3 & (0xff << 16)) ^ (s2 & (0xff << 8)) ^ (s1 & 0xff);
+    t1 = (s1 & (0xff << 24)) ^ (s0 & (0xff << 16)) ^ (s3 & (0xff << 8)) ^ (s2 & 0xff);
+    t2 = (s2 & (0xff << 24)) ^ (s1 & (0xff << 16)) ^ (s0 & (0xff << 8)) ^ (s3 & 0xff);
+    t3 = (s3 & (0xff << 24)) ^ (s2 & (0xff << 16)) ^ (s1 & (0xff << 8)) ^ (s0 & 0xff);
+    s0 = _lrotr(SBOX32_COL(t0), 8) ^ keys[28];
+    s1 = _lrotr(SBOX32_COL(t1), 8) ^ keys[29];
+    s2 = _lrotr(SBOX32_COL(t2), 8) ^ keys[30];
+    s3 = _lrotr(SBOX32_COL(t3), 8) ^ keys[31];
+    // round 4
+    t0 = TD0(s0 >> 24) ^ TD1( (s0 >> 16) & 0xff ) ^ TD2( (s0 >> 8) & 0xff ) ^ TD3(s0 & 0xff);
+    t1 = TD0(s1 >> 24) ^ TD1( (s1 >> 16) & 0xff ) ^ TD2( (s1 >> 8) & 0xff ) ^ TD3(s1 & 0xff);
+    t2 = TD0(s2 >> 24) ^ TD1( (s2 >> 16) & 0xff ) ^ TD2( (s2 >> 8) & 0xff ) ^ TD3(s2 & 0xff);
+    t3 = TD0(s3 >> 24) ^ TD1( (s3 >> 16) & 0xff ) ^ TD2( (s3 >> 8) & 0xff ) ^ TD3(s3 & 0xff);
+    s0 = (t0 & (0xff << 24)) ^ (t3 & (0xff << 16)) ^ (t2 & (0xff << 8)) ^ (t1 & 0xff);
+    s1 = (t1 & (0xff << 24)) ^ (t0 & (0xff << 16)) ^ (t3 & (0xff << 8)) ^ (t2 & 0xff);
+    s2 = (t2 & (0xff << 24)) ^ (t1 & (0xff << 16)) ^ (t0 & (0xff << 8)) ^ (t3 & 0xff);
+    s3 = (t3 & (0xff << 24)) ^ (t2 & (0xff << 16)) ^ (t1 & (0xff << 8)) ^ (t0 & 0xff);
+    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[24];
+    t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[25];
+    t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[26];
+    t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[27];
+    // round 5
+    s0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
+    s1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
+    s2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
+    s3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
+    t0 = (s0 & (0xff << 24)) ^ (s3 & (0xff << 16)) ^ (s2 & (0xff << 8)) ^ (s1 & 0xff);
+    t1 = (s1 & (0xff << 24)) ^ (s0 & (0xff << 16)) ^ (s3 & (0xff << 8)) ^ (s2 & 0xff);
+    t2 = (s2 & (0xff << 24)) ^ (s1 & (0xff << 16)) ^ (s0 & (0xff << 8)) ^ (s3 & 0xff);
+    t3 = (s3 & (0xff << 24)) ^ (s2 & (0xff << 16)) ^ (s1 & (0xff << 8)) ^ (s0 & 0xff);
+    s0 = _lrotr(SBOX32_COL(t0), 8) ^ keys[20];
+    s1 = _lrotr(SBOX32_COL(t1), 8) ^ keys[21];
+    s2 = _lrotr(SBOX32_COL(t2), 8) ^ keys[22];
+    s3 = _lrotr(SBOX32_COL(t3), 8) ^ keys[23];
+    // round 6
+    t0 = TD0(s0 >> 24) ^ TD1( (s0 >> 16) & 0xff ) ^ TD2( (s0 >> 8) & 0xff ) ^ TD3(s0 & 0xff);
+    t1 = TD0(s1 >> 24) ^ TD1( (s1 >> 16) & 0xff ) ^ TD2( (s1 >> 8) & 0xff ) ^ TD3(s1 & 0xff);
+    t2 = TD0(s2 >> 24) ^ TD1( (s2 >> 16) & 0xff ) ^ TD2( (s2 >> 8) & 0xff ) ^ TD3(s2 & 0xff);
+    t3 = TD0(s3 >> 24) ^ TD1( (s3 >> 16) & 0xff ) ^ TD2( (s3 >> 8) & 0xff ) ^ TD3(s3 & 0xff);
+    s0 = (t0 & (0xff << 24)) ^ (t3 & (0xff << 16)) ^ (t2 & (0xff << 8)) ^ (t1 & 0xff);
+    s1 = (t1 & (0xff << 24)) ^ (t0 & (0xff << 16)) ^ (t3 & (0xff << 8)) ^ (t2 & 0xff);
+    s2 = (t2 & (0xff << 24)) ^ (t1 & (0xff << 16)) ^ (t0 & (0xff << 8)) ^ (t3 & 0xff);
+    s3 = (t3 & (0xff << 24)) ^ (t2 & (0xff << 16)) ^ (t1 & (0xff << 8)) ^ (t0 & 0xff);
+    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[16];
+    t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[17];
+    t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[18];
+    t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[19];
+    // round 7
+    s0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
+    s1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
+    s2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
+    s3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
+    t0 = (s0 & (0xff << 24)) ^ (s3 & (0xff << 16)) ^ (s2 & (0xff << 8)) ^ (s1 & 0xff);
+    t1 = (s1 & (0xff << 24)) ^ (s0 & (0xff << 16)) ^ (s3 & (0xff << 8)) ^ (s2 & 0xff);
+    t2 = (s2 & (0xff << 24)) ^ (s1 & (0xff << 16)) ^ (s0 & (0xff << 8)) ^ (s3 & 0xff);
+    t3 = (s3 & (0xff << 24)) ^ (s2 & (0xff << 16)) ^ (s1 & (0xff << 8)) ^ (s0 & 0xff);
+    s0 = _lrotr(SBOX32_COL(t0), 8) ^ keys[12];
+    s1 = _lrotr(SBOX32_COL(t1), 8) ^ keys[13];
+    s2 = _lrotr(SBOX32_COL(t2), 8) ^ keys[14];
+    s3 = _lrotr(SBOX32_COL(t3), 8) ^ keys[15];
+    // round 8
+    t0 = TD0(s0 >> 24) ^ TD1( (s0 >> 16) & 0xff ) ^ TD2( (s0 >> 8) & 0xff ) ^ TD3(s0 & 0xff);
+    t1 = TD0(s1 >> 24) ^ TD1( (s1 >> 16) & 0xff ) ^ TD2( (s1 >> 8) & 0xff ) ^ TD3(s1 & 0xff);
+    t2 = TD0(s2 >> 24) ^ TD1( (s2 >> 16) & 0xff ) ^ TD2( (s2 >> 8) & 0xff ) ^ TD3(s2 & 0xff);
+    t3 = TD0(s3 >> 24) ^ TD1( (s3 >> 16) & 0xff ) ^ TD2( (s3 >> 8) & 0xff ) ^ TD3(s3 & 0xff);
+    s0 = (t0 & (0xff << 24)) ^ (t3 & (0xff << 16)) ^ (t2 & (0xff << 8)) ^ (t1 & 0xff);
+    s1 = (t1 & (0xff << 24)) ^ (t0 & (0xff << 16)) ^ (t3 & (0xff << 8)) ^ (t2 & 0xff);
+    s2 = (t2 & (0xff << 24)) ^ (t1 & (0xff << 16)) ^ (t0 & (0xff << 8)) ^ (t3 & 0xff);
+    s3 = (t3 & (0xff << 24)) ^ (t2 & (0xff << 16)) ^ (t1 & (0xff << 8)) ^ (t0 & 0xff);
+    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[ 8];
+    t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[ 9];
+    t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[10];
+    t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[11];
+    // round 9
+    s0 = TD0(t0 >> 24) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
+    s1 = TD0(t1 >> 24) ^ TD1( (t1 >> 16) & 0xff ) ^ TD2( (t1 >> 8) & 0xff ) ^ TD3(t1 & 0xff);
+    s2 = TD0(t2 >> 24) ^ TD1( (t2 >> 16) & 0xff ) ^ TD2( (t2 >> 8) & 0xff ) ^ TD3(t2 & 0xff);
+    s3 = TD0(t3 >> 24) ^ TD1( (t3 >> 16) & 0xff ) ^ TD2( (t3 >> 8) & 0xff ) ^ TD3(t3 & 0xff);
+    t0 = (s0 & (0xff << 24)) ^ (s3 & (0xff << 16)) ^ (s2 & (0xff << 8)) ^ (s1 & 0xff);
+    t1 = (s1 & (0xff << 24)) ^ (s0 & (0xff << 16)) ^ (s3 & (0xff << 8)) ^ (s2 & 0xff);
+    t2 = (s2 & (0xff << 24)) ^ (s1 & (0xff << 16)) ^ (s0 & (0xff << 8)) ^ (s3 & 0xff);
+    t3 = (s3 & (0xff << 24)) ^ (s2 & (0xff << 16)) ^ (s1 & (0xff << 8)) ^ (s0 & 0xff);
+    s0 = _lrotr(SBOX32_COL(t0), 8) ^ keys[ 4];
+    s1 = _lrotr(SBOX32_COL(t1), 8) ^ keys[ 5];
+    s2 = _lrotr(SBOX32_COL(t2), 8) ^ keys[ 6];
+    s3 = _lrotr(SBOX32_COL(t3), 8) ^ keys[ 7];
+    // round 10
+    t0 = TD0(s0 >> 24) ^ TD1( (s0 >> 16) & 0xff ) ^ TD2( (s0 >> 8) & 0xff ) ^ TD3(s0 & 0xff);
+    t1 = TD0(s1 >> 24) ^ TD1( (s1 >> 16) & 0xff ) ^ TD2( (s1 >> 8) & 0xff ) ^ TD3(s1 & 0xff);
+    t2 = TD0(s2 >> 24) ^ TD1( (s2 >> 16) & 0xff ) ^ TD2( (s2 >> 8) & 0xff ) ^ TD3(s2 & 0xff);
+    t3 = TD0(s3 >> 24) ^ TD1( (s3 >> 16) & 0xff ) ^ TD2( (s3 >> 8) & 0xff ) ^ TD3(s3 & 0xff);
+    s0 = (t0 & (0xff << 24)) ^ (t3 & (0xff << 16)) ^ (t2 & (0xff << 8)) ^ (t1 & 0xff);
+    s1 = (t1 & (0xff << 24)) ^ (t0 & (0xff << 16)) ^ (t3 & (0xff << 8)) ^ (t2 & 0xff);
+    s2 = (t2 & (0xff << 24)) ^ (t1 & (0xff << 16)) ^ (t0 & (0xff << 8)) ^ (t3 & 0xff);
+    s3 = (t3 & (0xff << 24)) ^ (t2 & (0xff << 16)) ^ (t1 & (0xff << 8)) ^ (t0 & 0xff);
+    t0 = _lrotr(SBOX32_COL(s0), 8) ^ keys[ 0];
+    t1 = _lrotr(SBOX32_COL(s1), 8) ^ keys[ 1];
+    t2 = _lrotr(SBOX32_COL(s2), 8) ^ keys[ 2];
+    t3 = _lrotr(SBOX32_COL(s3), 8) ^ keys[ 3];
 
     /* all rounds over, writing to final output */
    	PUTU32(out     , t0);
