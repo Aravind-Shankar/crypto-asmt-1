@@ -164,14 +164,6 @@ static const u32 Td[256] =
  *  Implementation-specific macro definitions.
  */
 
-#define SBOX32(x)   (( S[((x) >> 24)] << 24 )       |      \
-                    ( S[((x) >> 16) & 0xff] << 16 ) |      \
-                    ( S[((x) >> 8) & 0xff] << 8 )   |      \
-                    ( S[((x) & 0xff)] ))
-/*
-	new proposed code:
-	SBOX32_COL(x)	(x) ^ ( S[(x) & 0xff] << 24 ) ^ ( S[((x) >> 16) & 0xff] << 8 )
-*/
 #define	SBOX32_COL(x)	(x) ^ (( S[(x) & 0xff] << 24 ) | ( S[((x) >> 16) & 0xff] << 8 ))
 
 #define TE0(x)      Te[(x)]
