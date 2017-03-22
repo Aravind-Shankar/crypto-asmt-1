@@ -17,13 +17,15 @@ extern "C" {
 void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys);
 void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys);
 
-// util functions, copied from aes_locl.h
+void savitr_ecb_encrypt(u8 *in, u8 *out, const u32 *keys, u32 size);
+void savitr_ecb_decrypt(const u8 *in, u8 *out, const u32 *keys, u32 size);
+
+// util functions, some copied from aes_locl.h
 #if defined(_MSC_VER)
+# include <windows.h>	// for malloc()
 # define SWAP(x) (_lrotl(x, 8) & 0x00ff00ff | _lrotr(x, 8) & 0xff00ff00)
 # define GETU32(p) SWAP(*((u32 *)(p)))
 # define PUTU32(ct, st) { *((u32 *)(ct)) = SWAP((st)); }
-/*# define ROT_R(x, n)	_lrotr((x), (n))
-# define ROT_L(x, n)	_lrotl((x), (n))*/
 # define ROT_R8(x)	_lrotr(x, 8)
 # define ROT_R16(x)	_lrotr(x, 16)
 # define ROT_L8(x)	_lrotl(x, 8)
@@ -35,14 +37,6 @@ void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys);
 # define ROT_16(x)	( (0x0000ffff & ((x) >> 16)) | (0xffff0000 & ((x) << 16)) )
 # define ROT_L8(x)	( (0xffffff00 & ((x) <<  8)) | (0x000000ff & ((x) >> 24)) )
 #endif
-
-/*#ifndef __linux__
-# define ROT_R(x, n)	(( (x) >> (n) ) | ( (x) << (32 - (n)) ))
-# define ROT_L(x, n)	(( (x) << (n) ) | ( (x) >> (32 - (n)) ))
-#else
-# define ROT_R(x, n)	_lrotr((x), (n))
-# define ROT_L(x, n)	_lrotl((x), (n))
-#endif*/
 
 #ifdef __cplusplus
 }

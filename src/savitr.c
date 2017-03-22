@@ -439,3 +439,21 @@ void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
    	PUTU32(out +  8, t2);
    	PUTU32(out + 12, t3);
 }
+
+void savitr_ecb_encrypt(u8 *in, u8 *out, const u32 *keys, u32 size)
+{
+    u32 i;
+
+    if (size % 16 != 0)
+        for (i = size % 16; i < 16; ++i, ++size) in[size] = 0;
+
+    for (i = 0; i < size; i += 16)
+        savitr_encrypt(in + i, out + i, keys);
+}
+
+void savitr_ecb_decrypt(const u8 *in, u8 *out, const u32 *keys, u32 size)
+{
+    u32 i;
+    for (i = 0; i < size; i += 16)
+        savitr_decrypt(in + i, out + i, keys);    
+}
