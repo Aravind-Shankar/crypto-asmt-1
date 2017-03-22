@@ -18,7 +18,7 @@ void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys);
 void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys);
 
 void savitr_ecb_encrypt(u8 *in, u8 *out, const u32 *keys, u32 size);
-void savitr_ecb_decrypt(const u8 *in, u8 *out, const u32 *keys, u32 size);
+void savitr_ecb_decrypt(u8 *in, u8 *out, const u32 *keys, u32 size);
 
 // util functions, some copied from aes_locl.h
 #if defined(_MSC_VER)

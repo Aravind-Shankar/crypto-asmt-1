@@ -447,13 +447,13 @@ void savitr_ecb_encrypt(u8 *in, u8 *out, const u32 *keys, u32 size)
     if (size % 16 != 0)
         for (i = size % 16; i < 16; ++i, ++size) in[size] = 0;
 
-    for (i = 0; i < size; i += 16)
-        savitr_encrypt(in + i, out + i, keys);
+    for (i = 0; i < size; i += 16, in += 16, out += 16)
+        savitr_encrypt(in, out, keys);
 }
 
-void savitr_ecb_decrypt(const u8 *in, u8 *out, const u32 *keys, u32 size)
+void savitr_ecb_decrypt(u8 *in, u8 *out, const u32 *keys, u32 size)
 {
     u32 i;
-    for (i = 0; i < size; i += 16)
-        savitr_decrypt(in + i, out + i, keys);    
+    for (i = 0; i < size; i += 16, in += 16, out += 16)
+        savitr_decrypt(in, out, keys);    
 }

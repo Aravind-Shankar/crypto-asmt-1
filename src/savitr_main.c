@@ -27,7 +27,7 @@ u32 getNumBlocks(const char *fname)
 u32 readText(const char *fname, u8 *text)
 {
 	FILE* f;
-	u32 i, bytesRead;
+	u32 bytesRead;
 
 	if ((f = fopen(fname, "rb")) == NULL)
 	{
@@ -35,13 +35,13 @@ u32 readText(const char *fname, u8 *text)
 		exit(-1);
 	}
 	// printf("\nThe input text is: ");
-	for (bytesRead = i = 0; !feof(f) ; i += 16)
+	for (bytesRead = 0; !feof(f) ; ++text, ++bytesRead)
 	{
-		bytesRead += fread(text + i, sizeof(u8), 16, f);
+		(*text) = (u8)fgetc(f);
 	}
 	// printf("\n");
 	fclose(f);
-	return bytesRead;
+	return --bytesRead;
 }
 
 /*
@@ -79,13 +79,13 @@ void readKeys(const char *fname, u32 *keys)
  *	Output file format - text
  *
  */
-void writeOutput(const char *fname, u8 *output, u32 numBlocks)
+void writeOutput(const char *fname, u8 *output, u32 len)
 {
 	FILE* f;
 	u32 i;
-	u32 len = 16 * numBlocks;
+	// u32 len = 16 * numBlocks;
 
-	if ((f = fopen(fname, "w")) == NULL)
+	if ((f = fopen(fname, "wb")) == NULL)
 	{
 		printf("Cannot open output file\n");
 		exit(-1);
@@ -93,7 +93,7 @@ void writeOutput(const char *fname, u8 *output, u32 numBlocks)
 	printf("\nWriting to output file %s...\n", fname);
 
 	for (i = 0; i < len; ++i)
-		fprintf(f, "%c", (unsigned char)output[i]);
+		fputc(output[i], f);
 
 	printf("Done writing output.\n");
 	fclose(f);
@@ -128,7 +128,7 @@ int main(int argc, char const *argv[])
 		savitr_ecb_encrypt(pt, ct, keys, bytesRead);
 		printf("\nDone encrypting.\n");
 
-		writeOutput(argv[4], ct, numBlocks);
+		writeOutput(argv[4], ct, 16 * numBlocks);
 
 		free(pt); free(ct);
 	}
@@ -137,17 +137,24 @@ int main(int argc, char const *argv[])
 		numBlocks = getNumBlocks(argv[2]);
 		ct = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
 		pt = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
-
+		
 		bytesRead = readText(argv[2], ct);
 		readKeys(argv[3], keys);
 
 		printf("\nDecrypting...\n");
-		savitr_ecb_decrypt(ct, pt, keys, bytesRead);
+		savitr_ecb_decrypt(ct, pt, keys, 16 * numBlocks);
 		printf("\nDone decrypting.\n");
 
-		writeOutput(argv[4], pt, numBlocks);
-
-		free(pt); free(ct);
+		writeOutput(argv[4], pt, 16 * numBlocks);
+		free(ct); free(pt);
+	}
+	else if (!strcmp(argv[1], "c"))
+	{
+		numBlocks = getNumBlocks(argv[2]);
+		pt = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
+		bytesRead = readText(argv[2], pt);
+		writeOutput(argv[4], pt, bytesRead);
+		free(pt);
 	}
 	else
 		showUsageAndQuit(argc, argv);
