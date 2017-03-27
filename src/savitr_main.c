@@ -150,14 +150,6 @@ int main(int argc, char const *argv[])
 
 		free(ct); free(pt);
 	}
-	else if (!strcmp(argv[1], "c"))
-	{
-		numBlocks = getNumBlocks(argv[2]);
-		pt = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
-		bytesRead = readText(argv[2], pt, 16 * numBlocks);
-		writeOutput(argv[4], pt, bytesRead);
-		free(pt);
-	}
 	else
 		showUsageAndQuit(argc, argv);
 
