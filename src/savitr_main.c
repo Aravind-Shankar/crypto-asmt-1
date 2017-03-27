@@ -24,7 +24,7 @@ u32 getNumBlocks(const char *fname)
  *	File format required - any text file
  *
  */
-u32 readText(const char *fname, u8 *text)
+u32 readText(const char *fname, u8 *text, u32 maxLen)
 {
 	FILE* f;
 	u32 bytesRead;
@@ -34,14 +34,16 @@ u32 readText(const char *fname, u8 *text)
 		printf("Cannot open input file\n");
 		exit(-1);
 	}
-	// printf("\nThe input text is: ");
-	for (bytesRead = 0; !feof(f) ; ++text, ++bytesRead)
-	{
-		(*text) = (u8)fgetc(f);
-	}
-	// printf("\n");
+	
+	if (!feof(f))
+		for (bytesRead = 0; bytesRead < maxLen; ++text, ++bytesRead)
+		{
+			(*text) = (u8)fgetc(f);
+			if (feof(f)) break;		// checking at end of loop to ensure EOF is not read as well
+		}
+	
 	fclose(f);
-	return --bytesRead;
+	return bytesRead;
 }
 
 /*
@@ -83,8 +85,7 @@ void writeOutput(const char *fname, u8 *output, u32 len)
 {
 	FILE* f;
 	u32 i;
-	// u32 len = 16 * numBlocks;
-
+	
 	if ((f = fopen(fname, "wb")) == NULL)
 	{
 		printf("Cannot open output file\n");
@@ -121,7 +122,7 @@ int main(int argc, char const *argv[])
 		pt = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
 		ct = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
 
-		bytesRead = readText(argv[2], pt);
+		bytesRead = readText(argv[2], pt, 16 * numBlocks);
 		readKeys(argv[3], keys);
 
 		printf("\nEncrypting...\n");
@@ -138,7 +139,7 @@ int main(int argc, char const *argv[])
 		ct = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
 		pt = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
 		
-		bytesRead = readText(argv[2], ct);
+		bytesRead = readText(argv[2], ct, 16 * numBlocks);
 		readKeys(argv[3], keys);
 
 		printf("\nDecrypting...\n");
@@ -146,13 +147,14 @@ int main(int argc, char const *argv[])
 		printf("\nDone decrypting.\n");
 
 		writeOutput(argv[4], pt, 16 * numBlocks);
+
 		free(ct); free(pt);
 	}
 	else if (!strcmp(argv[1], "c"))
 	{
 		numBlocks = getNumBlocks(argv[2]);
 		pt = (u8*) malloc(sizeof(u8) * 16 * numBlocks);
-		bytesRead = readText(argv[2], pt);
+		bytesRead = readText(argv[2], pt, 16 * numBlocks);
 		writeOutput(argv[4], pt, bytesRead);
 		free(pt);
 	}
