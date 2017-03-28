@@ -2,9 +2,13 @@ import numpy as np
 import numpy.random as rnd
 import matplotlib.pyplot as plt
 import subprocess
+import platform
 
 MIN, MAX = 5, 20
 CLOCK_FREQ = 2e9
+SUBPROCESS_ARGS = ["./savitr_timer", "e", "plaintext.txt", "keys.txt", "ciphertext.txt"]
+if platform.system() == "Windows":
+	SUBPROCESS_ARGS[0] = "savitr_timer"
 
 times = np.array([1000 / CLOCK_FREQ] * (MAX - MIN + 1))
 for size in xrange(MIN, MAX + 1):
@@ -12,9 +16,9 @@ for size in xrange(MIN, MAX + 1):
 
     with open("plaintext.txt", "w") as f:
         for b in outBytes:
-            f.write((hex(b)[2:-1]).zfill(2))
+            f.write(chr(b))
 
-    times[size - MIN] *= float((subprocess.check_output("savitr_timer e plaintext.txt keys.txt ciphertext.txt")))
+    times[size - MIN] *= float((subprocess.check_output(SUBPROCESS_ARGS)))
 
 fig = plt.figure(1)
 plt.semilogx(2**np.arange(MIN, MAX + 1), times, basex=2, linewidth=3)
