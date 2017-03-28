@@ -1,6 +1,19 @@
+/*
+ *  File name:      savitr_main.c
+ *  Author(s):      Team ApBash [Aravind S (EE14B012), Aditya Pradeep (EE14B068)]
+ *  Synopsis:       File to implement full ECB mode encryption/decyption using savitr.h functions.
+ *  Execution:      Compile with savitr.c, or "make" (or "make main")
+ *					Running the executable (encryption): savitr e <inputFile> <keyFile> <outputFile>
+ *					Running the executable (decryption): savitr d <inputFile> <keyFile> <outputFile>
+ *
+ *					In/out files can be any files. Key file must adhere to a format, mentioned below in
+ *					the comments for readKeys().
+ */
+
 #include "savitr.h"
 #include <stdlib.h>
 
+// Helper function to calculate the number of blocks to encrypt - to allocate the required memory for input text
 u32 getNumBlocks(const char *fname)
 {
 	FILE* f;
@@ -20,6 +33,10 @@ u32 getNumBlocks(const char *fname)
 }
 
 /*
+ *
+ *	Reads input plaintext/ciphertext from file "fname" (to a max of "maxLen" chars)
+ *	and stores the result in "text" (assumed large enough).
+ *	Also returns the actual number of bytes read.
  *
  *	File format required - any text file
  *
@@ -48,7 +65,9 @@ u32 readText(const char *fname, u8 *text, u32 maxLen)
 
 /*
  *
- *	File format required - 10 lines, each with 4 space-separated 8-digit hex numbers
+ *	Reads all round keys from the text file "fname" and stores them in "keys" (assumed large enough).
+ *	
+ *	File format required - 10 lines, each with 4 space-separated 8-digit hex numbers.
  *
  */
 void readKeys(const char *fname, u32 *keys)
@@ -62,23 +81,22 @@ void readKeys(const char *fname, u32 *keys)
 		printf("Cannot open key file\n");
 		exit(-1);
 	}
-	// printf("\nThe round keys are:\n");
+	
 	for (i = index = 0; i < 10; ++i)
 	{
 		for (j = 0; j < 4; ++j, ++index)
 		{
 			fscanf(f, "%lx", &inputText);
-			// printf("%08lx ", inputText);
 			keys[index] = inputText;
 		}
-		// printf("\n");
 	}
 	fclose(f);
 }
 
 /*
  *
- *	Output file format - text
+ *	Writes "len" output bytes stored in "output" to the file "fname".
+ *	Output file format - normal text file.
  *
  */
 void writeOutput(const char *fname, u8 *output, u32 len)
@@ -100,6 +118,7 @@ void writeOutput(const char *fname, u8 *output, u32 len)
 	fclose(f);
 }
 
+// function to show correct usage and exit, if input command-line args were incorrect
 void showUsageAndQuit(int argc, const char *argv[])
 {
 	printf("Usage (encryption): %s e <inputFile> <keyFile> <outputFile>\n", argv[0]);
@@ -107,6 +126,7 @@ void showUsageAndQuit(int argc, const char *argv[])
 	exit(1);
 }
 
+// main(), straightforward full ECB encryption/decryption using the given command-line args (as above)
 int main(int argc, char const *argv[])
 {
 	u32 keys[40];

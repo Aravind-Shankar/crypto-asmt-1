@@ -1,7 +1,23 @@
+/*
+ *  File name:      savitr_test.c
+ *  Author(s):      Team ApBash [Aravind S (EE14B012), Aditya Pradeep (EE14B068)]
+ *  Synopsis:       File to test one-block encryption/decyption using savitr.h functions.
+ *  Execution:      Compile with savitr.c, or "make test"
+ *					Running the executable (encryption): savitr_test e <inputFile> <keyFile> <outputFile>
+ *					Running the executable (decryption): savitr_test d <inputFile> <keyFile> <outputFile>
+ *
+ *					Files should adhere to certail file formats, described in the comments for
+ *					the functions below.
+ */
+
 #include "savitr.h"
 #include <stdlib.h>
 
 /*
+ *
+ *	Reads one plaintext/ciphertext block from the file "fname" and stores the result in "text"
+ *	(assumed to have enough capacity).
+ *	Prints the input block to standard output as well, for diagnostic purposes.
  *
  *	File format required - one line with 16 space-separated bytes (i.e. 2-digit hex numbers)
  *
@@ -30,7 +46,9 @@ void readText(const char *fname, u8 *text)
 
 /*
  *
- *	File format required - 10 lines, each with 4 space-separated 8-digit hex numbers
+ *	Reads all round keys from the text file "fname" and stores them in "keys" (assumed large enough).
+ *	Prints the keys in order to standard output, for diagnostic purposes.
+ *	File format required - 10 lines, each with 4 space-separated 8-digit hex numbers.
  *
  */
 void readKeys(const char *fname, u32 *keys)
@@ -60,6 +78,7 @@ void readKeys(const char *fname, u32 *keys)
 
 /*
  *
+ *	Writes one block of ciphertext/plaintext to the file "fname".
  *	Output file format - one line with 16 space-separated bytes (i.e. 2-digit hex numbers)
  *
  */
@@ -82,6 +101,7 @@ void writeOutput(const char *fname, u8 *output)
 	fclose(f);
 }
 
+// function to show correct usage and exit, if input command-line args were incorrect
 void showUsageAndQuit(int argc, const char *argv[])
 {
 	printf("Usage (encryption): %s e <inputFile> <keyFile> <outputFile>\n", argv[0]);
@@ -89,6 +109,7 @@ void showUsageAndQuit(int argc, const char *argv[])
 	exit(1);
 }
 
+// main(), straightforward one-block encryption/decryption using the given command-line args (as above)
 int main(int argc, char const *argv[])
 {
 	u32 keys[40];

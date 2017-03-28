@@ -1,8 +1,22 @@
+/*
+ *  File name:      savitr.c
+ *  Author(s):      Team ApBash [Aravind S (EE14B012), Aditya Pradeep (EE14B068)]
+ *  Synopsis:       Implementation file for all Savitr encryption/decryption functions in "savitr.h"
+ *  Execution:      Non-executable. Compile with files such as savitr_main.c or savitr_test.c that use
+ *                  the functions in this file to observe their working.
+ */
+
 #include "savitr.h"
 #include <stdlib.h>
 
 /*
- *  Lookup table definitions.
+ *  Lookup table definitions. All of them take an 8-bit input "x".
+ *  "||" denotes concatenation.
+ *
+ *  S[x]    =   8-bit S-box output
+ *  Te[x]   =   [2x ||  x ||  x || 3x] in the AES field
+ *  Td[x]   =   [Ex || 9x || Dx || Bx] in the AES field
+ *
  */
 
 static const u8 S[256] =
@@ -163,6 +177,24 @@ static const u32 Td[256] =
 
 /*
  *  Implementation-specific macro definitions.
+ *
+ *  SBOX32_COL(x)   :   x is 32-bit. Let x = [x0 || x1 || x2 || x3] where each of x0,x1,x2,x3 is 8-bit.
+ *
+ *                      This macro returns [x0 ^ S[x3] || x1 || x2 ^ S[x1] || x3], in accordance with
+ *                      the Feistel part of Savitr (which is actually a row-wise Feistel, but x is a column).
+ *                      Refer the comments in savitr_encrypt() and savitr_decrypt() for more details.
+ *
+ *  TEi(x)          :   T-table implementation similar to AES, except that the S-boxes are not handled here.
+ *  (i = 0,1,2,3)       SBOX32_COL(x) handles S-box implementation while TEi(x) handles mix columns.
+ *
+ *                      These are defined as macros to save memory - only one Te[] table is used to get
+ *                      all 4 T-table outputs as TEi(x) is just TE0(x) right-shifted by i bytes.
+ *  
+ *  TDi(x)          :   Analogous to TEi(x), handles inverse mix columns. TDi(x) and TD0(x) are also 
+ *  (i = 0,1,2,3)       related by an i-byte right-shift, so again only one Td[] table is needed.
+ *
+ *  Refer "savitr.h" itself for the actual definitions of the rotation macros "ROT_xx()".
+ *
  */
 
 #define	SBOX32_COL(x)	(x) ^ (( S[(x) & 0xff] << 24 ) | ( S[((x) >> 16) & 0xff] << 8 ))
@@ -178,7 +210,19 @@ static const u32 Td[256] =
 #define TD3(x)      ROT_L8(Td[(x)])
 
 /*
- *  Definitions of functions from savitr.h
+ *  Definitions of single-block encryption/decryption functions from savitr.h.
+ *
+ *  savitr_encrypt(in, out, keys)   :   handles encryption of one full block of 128 bits ("in", a 16-byte array),
+ *                                      given all 10 round keys (a 10 * 4 32-byte flattened array),
+ *                                      and stores the output in "out", assumed to have a capacity of at least
+ *                                      16 bytes.
+ *
+ *  savitr_decrypt(in, out, keys)   :   handles decryption of one full block of 128 bits ("in", a 16-byte array),
+ *                                      given all 10 round keys (a 10 * 4 32-byte flattened array),
+ *                                      and stores the output in "out", assumed to have a capacity of at least
+ *                                      16 bytes.
+ *                                      Note that round keys must be in the same order as for savitr_encrypt().
+ *                                      Reversing the round key order is taken care of in the implementation.
  */
 
 void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
@@ -191,6 +235,39 @@ void savitr_encrypt(const u8 *in, u8 *out, const u32 *keys)
     t1 = GETU32(in +  4);
     t2 = GETU32(in +  8);
     t3 = GETU32(in + 12);
+
+    /*
+     *  Round structure (total 10 rounds):
+     *      The input is divided into a 4x4-byte matrix, of which t0,t1,t2,t3 are the *columns*.
+     *      Similarly each u32 in "keys" forms a column, and the XOR with the round key is done columnwise.
+     *
+     *      Feistel part:
+     *          After the columnwise key-XOR stage, we have a row-wise Feistel.
+     *          Essentially the input is rotated left by 1 byte and 2 bytes of the result are passed
+     *          through an S-box each, and the S-box outputs are XORed with the other 2 bytes.
+     *
+     *          If the input (after key-XOR) has rows r0,r1,r2,r3 and the output of Feistel has R0,R1,R2,R3
+     *          then    R0 = r1 ^ S[r0],    R1 = r2,    R2 = r3 ^ S[r2], and    R3 = r0.
+     *
+     *          Clearly, one 1-byte left rotation handles all but the S-boxes, and then notice that
+     *          S[r2] = S[R1] and S[r0] = S[R3]. So suitably using the correct bytes as input to S-boxes
+     *          will yield the full Feistel output, column by column. This is what is handled in SBOX32_COL().
+     *
+     *          Note that the entire Feistel can be done in one line per column: "s = SBOX32_COL(ROT_L8(t ^ key))"
+     *          but it has been split in 3 lines as 2 macros are used here which will wastefully recompute
+     *          (t ^ key) and its left rotation. Use of functions may have avoided this, but at the cost of
+     *          function call overheads.
+     *
+     *      Diffusion layer:
+     *          Savitr uses the exact same shift-rows mix-columns diffusion layer as AES, even in the same field.
+     *          Thus similar T-tables can be used, but S-box implementations are handled in SBOX32_COL(),
+     *          so the T-tables are just used for mix columns. We have optimized memory usage by using only one
+     *          of the 4 tables AES uses, as all other table outputs are related by right-rotation.
+     *
+     *          The output is once again 4 32-bit integers representing the columns of the output matrix.
+     *          Note that the operations have been chained here as the TEi() macros don't involve multiple
+     *          substitutions of their input, whereas the ROT_xx() and SBOX32_COL() macros do.
+     */
     
     // round 1
     s0 = t0 ^ keys[ 0]; s0 = ROT_L8(s0); s0 = SBOX32_COL(s0);
@@ -301,6 +378,16 @@ void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
 	t1 = GETU32(in +  4);
 	t2 = GETU32(in +  8);
 	t3 = GETU32(in + 12);
+
+    /*
+     *  Most of the description of the 10-round structure of savitr_encrypt() carries over here as well.
+     *  The only changes are:
+     *      1)  Use of TDi() instead of TEi() for inverse mix columns
+     *      2)  Implementation of inverse shift-rows separately after inverse mix columns
+     *      3)  Reversal of order of operations (and order or round keys).
+     *          Note that, thanks to the Feistel structure, SBOX32_COL() is its own inverse,
+     *          but the left rotation still needs to be reversed into a right rotation.
+     */
 
 	// round 1
     s0 = TD0((t0 >> 24) & 0xff) ^ TD1( (t0 >> 16) & 0xff ) ^ TD2( (t0 >> 8) & 0xff ) ^ TD3(t0 & 0xff);
@@ -440,13 +527,37 @@ void savitr_decrypt(const u8 *in, u8 *out, const u32 *keys)
    	PUTU32(out + 12, t3);
 }
 
+/*
+ *  Definitions of full encryption/decryption functions from savitr.h.
+ *
+ *  savitr_ecb_encrypt(in, out, keys, size):
+ *      Uses "size", the no. of bytes of plaintext, to pad the input with zeros, if necessary, to attain a
+ *      size that is a multiple of 16 (1 block = 16 bytes). "in" is assumed to hold the requisite amount
+ *      of memory (even beyond "size" elements).
+ *
+ *      Then the function does a basic ECB mode encryption, with round keys "keys", using savitr_encrypt(),
+ *      and stores the output in "out", which is again assumed to hold enough memory (can be more than "size").
+ *
+ *      "keys" is a 10 * 4 32-byte flattened array, as with savitr_encrypt().
+ *
+ *  savitr_ecb_decrypt(in, out, keys, size):
+ *      Decrypts the input ciphertext "in" (assumed to be padded already to a multiple of 16 bytes)
+ *      in ECB mode with round keys "keys" (assumed to be in the same order as with savitr_ecb_encrypt())
+ *      and stores the output in "out" (assumed to have the capacity required to store the output).
+ *
+ *      Note that here, strictly speaking, "size" must be equal to the length of the "in" and "out" arrays
+ *      as the input is assumed to have been padded. But the exact value of "size" itself doesn't matter,
+ *      as long as the number of blocks required stays the same and "in" and "out" have enough capacity.
+ */
 void savitr_ecb_encrypt(u8 *in, u8 *out, const u32 *keys, u32 size)
 {
     u32 i;
 
+    // Padding step, if "size" is not a multiple of 16.
     if (size % 16 != 0)
         for (i = size % 16; i < 16; ++i, ++size) in[size] = 0;
 
+    // Standard ECB encryption using savitr_encrypt() on each block.
     for (i = 0; i < size; i += 16, in += 16, out += 16)
         savitr_encrypt(in, out, keys);
 }
@@ -454,6 +565,8 @@ void savitr_ecb_encrypt(u8 *in, u8 *out, const u32 *keys, u32 size)
 void savitr_ecb_decrypt(u8 *in, u8 *out, const u32 *keys, u32 size)
 {
     u32 i;
+
+    // Standard ECB decryption using savitr_decrypt() on each block.
     for (i = 0; i < size; i += 16, in += 16, out += 16)
         savitr_decrypt(in, out, keys);    
 }
